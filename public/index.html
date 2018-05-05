@@ -1,0 +1,129 @@
+<html>
+<head>
+  <title>SnakeJS</title>
+  <script type="text/javascript" src="jq.js"></script>
+  <script type="text/javascript" src="jqc.js"></script>
+  <script type="text/javascript" src="howler.js"></script>
+  <script type="text/javascript" src="socket.js"></script>
+  <script type="text/javascript" src="snake2.js"></script>
+  <script type="text/javascript">
+  function showBox() {
+    $('#server-3').css('display', 'block');
+  }
+  function hideBox() {
+    $('#server-3').css('display', 'none');
+  }
+  </script>
+  <style type="text/css">
+
+  @font-face {
+    font-family: "Skirmisher";
+    src: url(skirmisher.ttf) format("truetype");
+    }
+
+    @font-face {
+      font-family: "Skirmisher2";
+      src: url(skirmisher3d.ttf) format("truetype");
+      }
+
+      @font-face {
+        font-family: "Skirmisher3";
+        src: url(skirmisherhalf.ttf) format("truetype");
+        }
+
+
+  body {
+    background-color: #1c2028;
+    background-image: url('bg.png');
+    background-repeat: no-repeat;
+    background-position: right;
+    color: aliceblue;
+    font-size: 60px;
+    text-shadow: 1px 1px black;
+  }
+
+  #score {
+    position:absolute;
+    left: 950px;
+    top: 50px;
+    color: white;
+    font-family: "Skirmisher";
+  }
+
+  .smallBtn {
+    opacity: 1;
+    outline-style: none;
+    background-color: #1c2028;
+    width: 200px;
+    color: white;
+    font-family: "Skirmisher2";
+    font-size:25px;
+    height: 50px;
+    border: 1px white solid;
+  }
+
+  .smallBtn:hover {
+    font-family: "Skirmisher3";
+  }
+
+  .smallBtn:active {
+    font-family: "Skirmisher2";
+  }
+
+  .textinput {
+    border: 1px aliceblue solid;
+    background-color: #282e3a;
+    outline-style: none;
+    font-family: "Skirmisher";
+    color: aliceblue;
+    text-align: center;
+    font-size: 16px;
+    height: 20px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  #sound {
+    background-color: #1c2028;
+    border: none;
+    outline-style: none;
+  }
+
+
+  }
+
+  </style>
+
+</head>
+<body>
+
+  <div id="enter">
+  <div id="canvas1" style="margin-left: 50px; margin-top: 50px; width: 850px; height: 600px; border: 1px aliceblue solid; background:#1c2028;">
+    <div id="enterWindow" style="margin-left: auto; margin-right: auto; margin-top: 180px; padding-top:20px; width: 600px; height: 200px; font-family: Skirmisher; font-size:20px; text-align:center;">
+What is your name, Snake?<p />
+<input id="namePut" class="textinput" type="text"></input><p />
+<form id="serverPick">
+<label for="server-1" onclick="hideBox()">Host</label>
+<input type="radio" id="server-1" name="server-sel" value="host" onclick="hideBox()" checked>
+
+<label for="server-2" onclick="showBox()">Join</label>
+<input type="radio" id="server-2" name="server-sel" value="join" onclick="showBox()">
+</form><p />
+<input type="text" id="server-3" class="textinput" style="display:none;"></input>
+
+
+<div id="buttonhold"><button id="play" class="smallBtn" onclick="joinQ()">Play</button></div>
+    </div>
+  </div>
+</div>
+  <div id="game" style="display:none;">
+  <div id="canvas" style="margin-left: 50px; margin-top: 50px; width: 850px; height: 600px; border: 1px aliceblue solid; background:#1c2028;">
+  </div>
+  <p />
+  <div id="pscore"></div>
+  <div id="escore"></div>
+  </div>
+<button id="sound" onclick="soundcontrol()" style="width: 38px; height: 38px; position:absolute; top: 675px; left: 70px; background-image: url('soundon.png');">
+<button id="gameStartButton" class="smallBtn" style="display:none; position:absolute; top: 400px; left: 385px;" onclick="startg()">start game</button>
+</body>
+</html>
