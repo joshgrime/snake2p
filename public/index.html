@@ -36,18 +36,91 @@
     background-color: #1c2028;
     background-image: url('bg.png');
     background-repeat: no-repeat;
-    background-position: right;
+    background-position: 900px 300px;
     color: aliceblue;
     font-size: 60px;
     text-shadow: 1px 1px black;
   }
 
-  #score {
+  #pscore {
     position:absolute;
     left: 950px;
-    top: 50px;
+    top: 550px;
     color: white;
     font-family: "Skirmisher";
+  }
+
+  #escore {
+    position:absolute;
+    left: 1050px;
+    top: 550px;
+    color: white;
+    font-family: "Skirmisher";
+  }
+
+  #feed {
+    position: absolute;
+    top: 50px;
+    left: 950px;
+    border: 1px aliceblue solid;
+    width: 450px;
+    height: 400px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-family: Arial;
+    font-size: 20px;
+  }
+
+  .cdw {
+    font-size: 50px;
+    text-align: center;
+    font-family: "Skirmisher3";
+    display: block;
+    margin-top: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+  }
+
+  #quitBtn {
+    position: absolute;
+    top: 470px;
+    left: 385px;
+  }
+
+  #newGameBtn {
+    position: absolute;
+    top: 400px;
+    left: 385px;
+  }
+
+  #restartBtn {
+    margin-top: 180px;
+  }
+
+  #wint {
+    color: #a7f8a5;
+  }
+
+  #lint {
+    color: red;
+  }
+
+  #countdown {
+    color: #a7f8a5;
+    font-size: 100px;
+    margin-top: 20px;
+  }
+
+  #dc {
+    font-size: 30px;
+    width: 250px;
+    position: absolute;
+    left: 360px;
+    top: 80px;
+    margin-top:20px;
   }
 
   .smallBtn {
@@ -64,6 +137,8 @@
 
   .smallBtn:hover {
     font-family: "Skirmisher3";
+    background-color: #a7f8a5;
+    color: #1c2028;
   }
 
   .smallBtn:active {
@@ -77,11 +152,35 @@
     font-family: "Skirmisher";
     color: aliceblue;
     text-align: center;
-    font-size: 16px;
-    height: 20px;
+    font-size: 40px;
+    height: 50px;
+    width: 350px;
     margin-right: auto;
     margin-left: auto;
   }
+
+  .textinput:hover {
+    background-color: #a7f8a5;
+    color: #1c2028;
+  }
+
+ label:hover {
+    color: #a7f8a5;
+  }
+
+
+input[type="radio"]:checked + label {
+color: #a7f8a5;
+}
+
+input[type=text] {
+    width: 350px;
+    transition: ease-in-out, width .35s ease-in-out;
+}
+
+input[type=text]:focus {
+    width: 400px;
+}
 
   #sound {
     background-color: #1c2028;
@@ -89,31 +188,62 @@
     outline-style: none;
   }
 
-
+  #leaderboard {
+    display: table;
+    width: 600px;
+    border-color: aliceblue;
+    position: absolute;
+    top: 750px;
+    left: 165px;
+    font-family: Arial;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px aliceblue solid;
   }
+  .t-cell {
+      display: table-cell;
+      font-size: 18px;
+    }
+
+  .t-head {
+      display: table-cell;
+      font-size: 16px;
+      background-color: #20252d;
+
+    }
+
+    .row2, .row4, .row6, .row8, .row10 {
+      background-color: #20252d;
+      border-bottom: 1px aliceblue solid;
+    }
+
+    .row1:hover, .row2:hover, .row3:hover, .row4:hover, .row5:hover, .row6:hover, .row7:hover, .row8:hover, .row9:hover, .row10:hover {
+      background-color: #a7f8a5;
+      color: #1c2028;
+    }
 
   </style>
 
 </head>
 <body>
-
+  <div id="feed"></div>
   <div id="enter">
   <div id="canvas1" style="margin-left: 50px; margin-top: 50px; width: 850px; height: 600px; border: 1px aliceblue solid; background:#1c2028;">
-    <div id="enterWindow" style="margin-left: auto; margin-right: auto; margin-top: 180px; padding-top:20px; width: 600px; height: 200px; font-family: Skirmisher; font-size:20px; text-align:center;">
+    <div id="enterWindow" style="margin-left: auto; margin-right: auto; margin-top: 140px; padding-top:20px; width: 600px; height: 300px; font-family: Skirmisher; font-size:30px; text-align:center;">
 What is your name, Snake?<p />
 <input id="namePut" class="textinput" type="text"></input><p />
 <form id="serverPick">
-<label for="server-1" onclick="hideBox()">Host</label>
-<input type="radio" id="server-1" name="server-sel" value="host" onclick="hideBox()" checked>
+<input type="radio" id="server-1" name="server-sel" value="host" onclick="hideBox()" style="display:none;" checked>
+<label class="s-pick" for="server-1" onclick="hideBox()">Host</label>
 
-<label for="server-2" onclick="showBox()">Join</label>
-<input type="radio" id="server-2" name="server-sel" value="join" onclick="showBox()">
+<input type="radio" id="server-2" name="server-sel" value="join" onclick="showBox()" style="display:none;">
+<label class="s-pick" for="server-2" onclick="showBox()">Join</label>
 </form><p />
 <input type="text" id="server-3" class="textinput" style="display:none;"></input>
 
 
 <div id="buttonhold"><button id="play" class="smallBtn" onclick="joinQ()">Play</button></div>
-    </div>
+</div>
   </div>
 </div>
   <div id="game" style="display:none;">
@@ -124,6 +254,79 @@ What is your name, Snake?<p />
   <div id="escore"></div>
   </div>
 <button id="sound" onclick="soundcontrol()" style="width: 38px; height: 38px; position:absolute; top: 675px; left: 70px; background-image: url('soundon.png');">
-<button id="gameStartButton" class="smallBtn" style="display:none; position:absolute; top: 400px; left: 385px;" onclick="startg()">start game</button>
+<button id="gameStartButton" class="smallBtn" style="display:none; position:absolute; top: 470px; left: 385px;" onclick="startg()">start game</button>
+
+<div id="leaderboard">
+  <div style="display: table-row">
+<div class="t-head">Rank</div>
+<div class="t-head">Name</div>
+<div class="t-head">Score</div>
+</div>
+
+<div class="row1" style="display: table-row">
+
+  <div class="t-cell">1</div>
+  <div id="t-1name" class="t-cell"></div>
+  <div id="t-1score" class="t-cell"></div>
+</div>
+
+<div class="row2" style="display: table-row">
+  <div class="t-cell">2</div>
+  <div id="t-2name" class="t-cell"></div>
+  <div id="t-2score" class="t-cell"></div>
+</div>
+
+<div class="row3" style="display: table-row">
+  <div class="t-cell">3</div>
+  <div id="t-3name" class="t-cell"></div>
+  <div id="t-3score" class="t-cell"></div>
+</div>
+
+<div class="row4" style="display: table-row">
+  <div class="t-cell">4</div>
+  <div id="t-4name" class="t-cell"></div>
+  <div id="t-4score" class="t-cell"></div>
+</div>
+
+<div class="row5" style="display: table-row">
+  <div class="t-cell">5</div>
+  <div id="t-5name" class="t-cell"></div>
+  <div id="t-5score" class="t-cell"></div>
+</div>
+
+<div class="row6" style="display: table-row">
+  <div class="t-cell">6</div>
+  <div id="t-6name" class="t-cell"></div>
+  <div id="t-6score" class="t-cell"></div>
+</div>
+
+<div class="row7" style="display: table-row">
+  <div class="t-cell">7</div>
+  <div id="t-7name" class="t-cell"></div>
+  <div id="t-7score" class="t-cell"></div>
+</div>
+
+<div class="row8" style="display: table-row">
+  <div class="t-cell">8</div>
+  <div id="t-8name" class="t-cell"></div>
+  <div id="t-8score" class="t-cell"></div>
+</div>
+
+<div class="row9" style="display: table-row">
+  <div class="t-cell">9</div>
+  <div id="t-9name" class="t-cell"></div>
+  <div id="t-9score" class="t-cell"></div>
+</div>
+
+<div class="row10" style="display: table-row">
+  <div class="t-cell">10</div>
+  <div id="t-10name" class="t-cell"></div>
+  <div id="t-10score" class="t-cell"></div>
+</div>
+
+</div>
+
+
+
 </body>
 </html>

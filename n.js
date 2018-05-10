@@ -2,6 +2,7 @@ const express = require('express');
 const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
+const jsonfile = require('jsonfile')
 
 server.listen(3000);
 
@@ -10,47 +11,114 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
 
+var leaderBoard = [];
+
+jsonfile.readFile('leaderboard.json', function(err, obj) {
+for (i=1;i<11;i++) {
+ leaderBoard.push(obj[i].score);
+}
+});
+
+
+var allClients = [];
+
 io.on('connection', function (socket) {
-  console.log('got a connect');
+  jsonfile.readFile('leaderboard.json', function(err, obj) {
+  socket.emit('leaderboard', obj);
+});
+
+allClients.push({'id':socket.id, 'room':''});
+
+socket.on('disconnect', function() {
+var room;
+function step1(callback) {
+  for (i=0;i<allClients.length;i++) {
+      if (allClients[i].id == socket.id) {
+        room = allClients[i].room;
+        io.to(room).emit('playerLeftRoom');
+        callback();
+        break;
+      }
+    }
+}
+function step2() {
+  var i = allClients.indexOf(socket.id);
+  allClients.splice(i, 1);
+}
+step1(step2);
+});
 
 socket.on('queueEnter', function (data) {
-console.log(data);
+console.log('New player: '+JSON.stringify(data));
 var gameName;
-  if (data.gameRoom == 'host') { //host a game
-    socket.join(data.playerName);
-    console.log('created a room called '+data.playerName);
-    gameName = data.playerName;
-    socket.emit('hoster');
+var roomx = data.playerName.toLowerCase();
+var clientsx = io.sockets.adapter.rooms[roomx];
+  if (data.gameRoom == 'host' && clientsx == undefined) { //host a game
+    gameName = roomx;
+    socket.join(gameName);
+    socket.emit('hoster', gameName);
+    console.log('Created a room called '+data.playerName);
+    hotelManager('push', socket.id, gameName);
   }
-  else { //join a game
-    console.log('joined a room called '+data.gameRoom);
-    var clients = io.sockets.adapter.rooms[data.gameRoom];
-    gameName = data.gameRoom;
-    if (clients.length == 1) {
+  else if (data.gameRoom !== 'host') { //join a game
+    var room = data.gameRoom.toLowerCase();
+    var clients = io.sockets.adapter.rooms[room];
+    if (clients == undefined) {
+    socket.emit('noRoom', data.gameRoom);
+    console.log(data.playerName +' could not find room called ' + data.gameRoom);
+    }
+    else if (clients.length == 1) { //join successful
+      gameName = data.gameRoom.toLowerCase();
       socket.join(gameName);
+      hotelManager('push', socket.id, gameName);
+      console.log(data.playerName+' joined a room called '+data.gameRoom);
       io.to(gameName).emit('gameStart', {'gn':gameName, 'pn':data.playerName});
       console.log(clients.sockets);
     }
-    else if (clients.length > 1) {
-
+    else if (clients.length > 1) { // tried to join but game is full
+    socket.emit('roomFull', data.gameRoom)
     }
+  }
+  else if (data.gameRoom == 'host') { //host a game but game already exists
+    console.log(data.playerName +' tried to create room called ' + data.playerName + ', but room already exists.');
+    socket.emit('hostExists', data.playerName);
   }
 
 });
 
-socket.on('gogogo', function (data) {
-  console.log('loading up a game');
-  io.to(data).emit('startGame', data);
-game(data);
+socket.on('cancel', function (data) {
+  socket.leave(data);
+  hotelManager(null, socket.id, data);
+  io.to(data).emit('playerLeftRoom');
 });
 
-function game(gameName) {
-var clients = io.sockets.adapter.rooms[gameName].sockets;
+socket.on('gogogo', function (data) {
+  var clients = io.sockets.adapter.rooms[data.gameName];
+  if (clients.length == 2) {
+  console.log('Loading up a game! in 3 seconds! >> '+ data.gameName);
+  io.to(data.gameName).emit('countdown');
+  setTimeout(function() {
+  io.to(data.gameName).emit('startGame', data.gameName);
+  game(data);
+  }, 3000);
+}
+else {
+  console.log('Not enough players! Closing.');
+  socket.emit('lowPlayers');
+}
+});
+
+function game(data) {
+var clients = io.sockets.adapter.rooms[data.gameName].sockets;
 var pids = Object.keys(clients);
-console.log(pids);
-var gameName = gameName;
+var gameName = data.gameName;
+var player1Name = data.player1Name;
+var player2Name = data.player2Name;
 var player1id = pids[0];
 var player2id = pids[1];
+var player1score = 0;
+var player2score = 0;
+var gamelive = true;
 
     class Snake {
       constructor(player) {
@@ -59,20 +127,16 @@ var player2id = pids[1];
         this.start = function () {
                   if (this.player == 'player1'){
                   this.steveIrwin = [{'i':300,'j':320}];
-                  console.log('Player 1 created. Steve Irwin is:');
-                  console.log(this.steveIrwin);
                   }
                   else {
                   this.steveIrwin = [{'i':300,'j':630}];
-                  console.log('Player 2 created. Steve Irwin is:');
-                  console.log(this.steveIrwin);
                   }
                   }
         this.otherPlayer = function () {
-          if (this.player == 'player1') {return player2.steveIrwin;} else {return player1.steveIrwin;}}
+        if (this.player == 'player1') {return player2.steveIrwin;} else {return player1.steveIrwin;}}
         this.guard = false;
         this.direction = 'down';
-        this.ms = 50;
+        this.ms = 38;
         this.size = 1;
 
         this.position = function () {
@@ -105,21 +169,12 @@ var player2id = pids[1];
           if (j < 60) {j = 900};
           if (j > 900) {j = 60};
 
-          var otherplayer = this.otherPlayer();
+            var otherplayer = this.otherPlayer();
           for (let z=0;z<this.steveIrwin.length;z++) {
             if (this.steveIrwin[z].i == i && this.steveIrwin[z].j == j) {
               this.die();
-              console.log('player '+this.player+ 'died');
               return;
             }
-            for (let u=0;u<otherplayer.length;u++){
-
-            if (this.steveIrwin[0].i == otherplayer[u].i && this.steveIrwin[0].j == otherplayer[u].j) {
-              this.die();
-              console.log('player '+this.player+ 'died');
-              return;
-            }
-          }
 
           }
           this.steveIrwin.unshift({'i':i,'j':j});
@@ -129,33 +184,44 @@ var player2id = pids[1];
           else {
             var y = this.steveIrwin.length - 1;
             this.steveIrwin.length = this.size;
+            for (let u=0;u<otherplayer.length;u++){
+            if (this.steveIrwin[0].i == otherplayer[u].i && this.steveIrwin[0].j == otherplayer[u].j) {
+              this.die();
+              return;
+            }
+          }
           }
           var op = jim;
           pushToClient(op);
           if (op == 1) {
-          setTimeout(function(){player1.move(1);}, this.ms);
+          setTimeout(function(){if (gamelive) {player1.move(1);}}, this.ms);
           }
           else if (op == 2) {
-          setTimeout(function(){player2.move(2);}, this.ms);
+          setTimeout(function(){if (gamelive) {player2.move(2);}}, this.ms);
         }
 }
         this.eat = function () {
           io.in(gameName).emit('fruitDel');
           this.size++;
           fruitPicker(player1.steveIrwin,player2.steveIrwin,gameName);
-          if (this.ms > 10){
-          this.ms -= 4;}
+          if (this.ms > 30){
+          this.ms -= 1;}
+          if (this.player == 'player1') {player1score += 10;} else {player2score += 10;}
+          io.in(gameName).emit('score', {'p1s':player1score,'p2s':player2score});
           }
 
         this.die = function () {
-          return;
+          gamelive = false;
+          var player = this.player;
+          io.in(gameName).emit('snakeDed', player);
+          io.local.emit('gameReport', {'player1':player1Name, 'player2':player2Name, 'winner': player});
+          if (player == 'player1') {
+            referee(player2score, player2Name);
           }
-
-          //setTimeout(function(){$('#buttonhold').append('<button id="play" style="opacity: 0;" onclick="snake()">Play</button>');
-          //$("#play").animate({
-            //  opacity: 1
-          //  }, 800 );
-      //  }, 2000);
+          else {
+            referee(player1score, player1Name);
+          }
+          }
        }
       }
 
@@ -171,13 +237,9 @@ else {
 
 if (p1 == true && p2 == true) {
   var data = {'p1': player1.steveIrwin, 'p2': player2.steveIrwin};
-  //console.log('Snakeies: '+JSON.stringify(data, null, 1));
-  //console.log('Sending snakes to: ' +gameName);
   io.in(gameName).emit('snakeMove', data);
   p1 = false;
   p2 = false;
-
-  //console.log('moved '+p1+p2);
 }
 }
 
@@ -213,20 +275,25 @@ if (davidAttenborough[y].i == i && davidAttenborough[y].j == j) {
 var colors = ['#F52078', '#a5cdf8', '#e8e87c'];
 var color = colors[Math.floor(Math.random() * colors.length)];
 var obj = {'i':i,'j':j,'color':color};
-console.log('Sending bananas to '+gameName+': '+obj);
 io.in(gameName).emit('fruit', obj);
 fruitLoc = obj;
 
 }
-    fruitPicker([{'i':300,'j':320}], [{'i':300,'j':630}]);
-    var player1 = new Snake('player1');
-    var player2 = new Snake('player2');
-    player1.start();
-    player2.start();
-    player1.move(1);
-    player2.move(2);
 
+fruitPicker([{'i':300,'j':320}], [{'i':300,'j':630}]);
+var player1 = new Snake('player1');
+var player2 = new Snake('player2');
+player1.start();
+player2.start();
+player1.move(1);
+player2.move(2);
 
+socket.on('disconnect', function() {
+player1.die();
+});
+socket.on('otherPlayerDC', function() {
+  player2.die();
+});
 
   socket.on('left', function (data) {
       if (data == true) {
@@ -284,6 +351,7 @@ fruitLoc = obj;
     }
     }
   });
+
 }
 
 socket.on('move', function (data) {
@@ -292,3 +360,57 @@ socket.on('move', function (data) {
 });
 
 });
+
+function referee (score, name) {
+  console.log(name +' scored '+score);
+  var result = true;
+  var index;
+  for (let i=0; i < 10; i++) {
+      if (leaderBoard[i] < score) {
+          result = false;
+          index = i + 1;
+          break;
+      }
+  }
+  if (!result) {
+    jsonfile.readFile('leaderboard.json', function(err, obj) {
+      newhiScore(obj, index, score, name);
+    });
+  }
+  else {
+    result = true;
+    console.log('not a new hi score');
+  }
+}
+
+
+function newhiScore(obj, index, score, name) {
+  for (let i=10;i>index-1;i--) {
+    obj[i].score = obj[i-1].score;
+    obj[i].name = obj[i-1].name;
+  }
+  obj[index].score = score;
+  obj[index].name = name;
+
+  jsonfile.writeFile('leaderboard.json', obj, function (err) {
+    console.log(err);
+});
+
+  for (i=1;i<11;i++) {
+   leaderBoard.push(obj[i].score);
+  }
+
+  io.local.emit('leaderboard', obj);
+  io.local.emit('newHiScore', {'name':name, 'score':score, 'rank':index});
+
+}
+
+function hotelManager (type, pid, room) {
+  for (i=0;i<allClients.length;i++) {
+    if (allClients[i].id == pid) {
+      if (type == 'push') {allClients[i].room = room;}
+      else {allClients[i].room = '';}
+      break;
+    }
+  }
+}
