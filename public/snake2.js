@@ -1,5 +1,5 @@
 var soundstate = true;
-var socket = io.connect('http://localhost:3000');
+var socket = io.connect('http://192.168.22.97:3000');
 var hoster = false;
 var gameName = '';
 var playerName = '';
@@ -101,7 +101,7 @@ socket.on('gameReport', function (data) {
     loser = data.player1;
   }
 
-  $('#feed').append('<p /><span>'+winner+' has beaten '+loser+'!');
+  $('#feed').prepend('<p /><span>'+winner+' has beaten '+loser+'!');
 
 });
 
@@ -120,16 +120,16 @@ socket.on('leaderboard', function(data) {
 
 socket.on('newHiScore', function(data) {
   if (data.rank == 1) {
-    $('#feed').append('<p /><span style="color: #a7f8a5; font-size:40px">'+data.name+' has scored the top score with <span style="color: #e25865">'+data.score+'</span> points!</span>');
+    $('#feed').prepend('<p /><span style="color: #a7f8a5; font-size:40px">'+data.name+' has scored the top score with <span style="color: #e25865">'+data.score+'</span> points!</span>');
   }
   else if (data.rank == 2) {
-    $('#feed').append('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'nd highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
+    $('#feed').prepend('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'nd highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
   }
   else if (data.rank == 3) {
-    $('#feed').append('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'rd highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
+    $('#feed').prepend('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'rd highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
   }
   else {
-  $('#feed').append('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'th highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
+  $('#feed').prepend('<p /><span style="color: #a7f8a5;">'+data.name+'</span> scored the '+data.rank+'th highest score with <span style="color: #a7f8a5">'+data.score+'</span> points!');
 }
 });
 

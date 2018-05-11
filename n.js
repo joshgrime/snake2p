@@ -25,6 +25,9 @@ var allClients = [];
 io.on('connection', function (socket) {
   jsonfile.readFile('leaderboard.json', function(err, obj) {
   socket.emit('leaderboard', obj);
+  for (i=1;i<11;i++) {
+   leaderBoard.push(obj[i].score);
+  }
 });
 
 allClients.push({'id':socket.id, 'room':''});
@@ -94,6 +97,7 @@ socket.on('cancel', function (data) {
 
 socket.on('gogogo', function (data) {
   var clients = io.sockets.adapter.rooms[data.gameName];
+  if (clients.length !== undefined){
   if (clients.length == 2) {
   console.log('Loading up a game! in 3 seconds! >> '+ data.gameName);
   io.to(data.gameName).emit('countdown');
@@ -102,6 +106,10 @@ socket.on('gogogo', function (data) {
   game(data);
   }, 3000);
 }
+else {
+  console.log('Not enough players! Closing.');
+  socket.emit('lowPlayers');
+}}
 else {
   console.log('Not enough players! Closing.');
   socket.emit('lowPlayers');
@@ -385,7 +393,7 @@ function referee (score, name) {
 
 
 function newhiScore(obj, index, score, name) {
-  for (let i=10;i>index-1;i--) {
+  for (let i=10;i>index;i--) {
     obj[i].score = obj[i-1].score;
     obj[i].name = obj[i-1].name;
   }
